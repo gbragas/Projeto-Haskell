@@ -47,7 +47,7 @@ getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir :: 
 
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 bindir     = "/Users/macbook/repos/pf/projeto-pf/.stack-work/install/aarch64-osx/6b96a5004d8eacf7a6dc80adfcb96504f89b6afe73be590cd1eae41f3ffaff6e/9.6.6/bin"
-libdir     = "/Users/macbook/repos/pf/projeto-pf/.stack-work/install/aarch64-osx/6b96a5004d8eacf7a6dc80adfcb96504f89b6afe73be590cd1eae41f3ffaff6e/9.6.6/lib/aarch64-osx-ghc-9.6.6/projeto-pf-0.1.0.0-AXvNx5a4qp2Hvz3SDg0QCd-projeto-pf"
+libdir     = "/Users/macbook/repos/pf/projeto-pf/.stack-work/install/aarch64-osx/6b96a5004d8eacf7a6dc80adfcb96504f89b6afe73be590cd1eae41f3ffaff6e/9.6.6/lib/aarch64-osx-ghc-9.6.6/projeto-pf-0.1.0.0-gGMSKUyVjk3UlI3fxWA0F-projeto-pf"
 dynlibdir  = "/Users/macbook/repos/pf/projeto-pf/.stack-work/install/aarch64-osx/6b96a5004d8eacf7a6dc80adfcb96504f89b6afe73be590cd1eae41f3ffaff6e/9.6.6/lib/aarch64-osx-ghc-9.6.6"
 datadir    = "/Users/macbook/repos/pf/projeto-pf/.stack-work/install/aarch64-osx/6b96a5004d8eacf7a6dc80adfcb96504f89b6afe73be590cd1eae41f3ffaff6e/9.6.6/share/aarch64-osx-ghc-9.6.6/projeto-pf-0.1.0.0"
 libexecdir = "/Users/macbook/repos/pf/projeto-pf/.stack-work/install/aarch64-osx/6b96a5004d8eacf7a6dc80adfcb96504f89b6afe73be590cd1eae41f3ffaff6e/9.6.6/libexec/aarch64-osx-ghc-9.6.6/projeto-pf-0.1.0.0"

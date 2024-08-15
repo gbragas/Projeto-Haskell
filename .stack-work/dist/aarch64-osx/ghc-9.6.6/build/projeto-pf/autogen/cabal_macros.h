@@ -20,6 +20,16 @@
   (major1) == 4 && (major2) <  18 || \
   (major1) == 4 && (major2) == 18 && (minor) <= 2)
 #endif /* MIN_VERSION_base */
+/* package gloss-1.13.2.2 */
+#ifndef VERSION_gloss
+#define VERSION_gloss "1.13.2.2"
+#endif /* VERSION_gloss */
+#ifndef MIN_VERSION_gloss
+#define MIN_VERSION_gloss(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  13 || \
+  (major1) == 1 && (major2) == 13 && (minor) <= 2)
+#endif /* MIN_VERSION_gloss */
 
 /* tool gcc-15.0.0 */
 #ifndef TOOL_VERSION_gcc
@@ -93,7 +103,7 @@
 #endif /* MIN_TOOL_VERSION_runghc */
 
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "projeto-pf-0.1.0.0-AXvNx5a4qp2Hvz3SDg0QCd-projeto-pf"
+#define CURRENT_COMPONENT_ID "projeto-pf-0.1.0.0-gGMSKUyVjk3UlI3fxWA0F-projeto-pf"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.1.0.0"
