@@ -19,7 +19,6 @@ limiteLarguraEstrada = larguraTela / 2 - larguraObstaculo
 distanciaObstaculo = 50.0
 
 
-
 -- Tipo Estado (posição do jogador e lista de obstáculos)
 type Estado = (Float, Float, [Obstacle])  -- (posicaoX, posicaoY, lista de obstáculos)
 
@@ -29,6 +28,11 @@ type Obstacle = (Float, Float)
 -- Posição inicial do jogador
 estadoInicial :: Estado
 estadoInicial = (0, limiteAlturaJogo, [(limiteLarguraEstrada, limiteAlturaEstrada), (limiteLarguraEstrada - distanciaObstaculo, -1 * limiteAlturaJogo)])
+
+-- Fundo fixo
+desenhaRua :: Picture
+desenhaRua = translate 0 (-50) $ color (light black) $
+    rectangleSolid larguraTela (500 + alturaObstaculo)
 
 
 -- Renderiza o estado do Jogador
@@ -43,7 +47,7 @@ desenhaObstaculos obstaculos = Pictures [translate ox oy $ color red $ rectangle
 
 -- Função principal de desenho
 desenhaEstado :: Estado -> Picture
-desenhaEstado (x, y, obstaculos) = Pictures [desenhaJogador (x, y), desenhaObstaculos obstaculos]
+desenhaEstado (x, y, obstaculos) = Pictures [desenhaRua, desenhaJogador (x, y), desenhaObstaculos obstaculos]
 
 
 
