@@ -3,7 +3,7 @@ import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Interface.IO.Game
 
 -- Definindo variáveis globais
-larguraTela, alturaTela, larguraPersonagem, alturaPersonagem, limiteAlturaJogo, limiteLarguraJogo, limiteAlturaEstrada :: Float
+larguraTela, alturaTela, larguraPersonagem, alturaPersonagem, limiteAlturaJogo, limiteLarguraJogo, limiteAlturaEstrada, limiteLarguraEstrada, larguraObstaculo, alturaObstaculo, velocidadeObstaculo :: Float
 larguraTela = 800.0
 alturaTela = 600.0
 larguraPersonagem = 50.0
@@ -16,6 +16,9 @@ limiteAlturaJogo = alturaTela / 2 - alturaPersonagem -- 260
 limiteLarguraJogo = larguraTela / 2 - larguraPersonagem -- 360
 limiteAlturaEstrada = alturaTela / 3
 limiteLarguraEstrada = larguraTela / 2 - larguraObstaculo
+
+velocidadeObstaculo = 50.0
+
 
 
 -- Tipo Estado (posição do jogador e lista de obstáculos)
@@ -64,7 +67,19 @@ reageEvento _ estado = estado
 
 -- Atualiza o estado do jogo
 atualizaEstado :: Float -> Estado -> Estado
-atualizaEstado _ estado@(x, y, obstaculos) = estado
+atualizaEstado tempo (x, y, obstaculos) =
+    let
+        -- Velocidade dos obstáculos
+        velocidade = 50.0
+
+        -- Nova posição dos obstáculos
+        novosObstaculos = [( if ox < -limiteLarguraEstrada then
+         limiteLarguraEstrada 
+         else 
+            ox - velocidade * tempo, oy) | (ox, oy) <- obstaculos]
+    in
+        (x, y, novosObstaculos)
+
 
 -- Função principal que inicia o jogo
 main :: IO ()
