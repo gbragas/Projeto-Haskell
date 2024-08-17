@@ -1,9 +1,8 @@
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
-import Graphics.Gloss.Interface.IO.Game
 
 -- Definindo variáveis globais
-larguraTela, alturaTela, larguraPersonagem, alturaPersonagem, limiteAlturaJogo, limiteLarguraJogo, limiteAlturaEstrada, limiteLarguraEstrada, larguraObstaculo, alturaObstaculo, velocidadeObstaculo :: Float
+larguraTela, alturaTela, larguraPersonagem, alturaPersonagem, limiteAlturaJogo, limiteLarguraJogo, limiteAlturaEstrada, limiteLarguraEstrada, larguraObstaculo, alturaObstaculo, distanciaObstaculo :: Float
 larguraTela = 800.0
 alturaTela = 600.0
 larguraPersonagem = 50.0
@@ -12,12 +11,12 @@ alturaPersonagem = 50.0
 larguraObstaculo = 40.0
 alturaObstaculo = 20.0
 
-limiteAlturaJogo = alturaTela / 2 - alturaPersonagem -- 260
+limiteAlturaJogo = alturaTela / 2 - alturaPersonagem / 2 -- 260
 limiteLarguraJogo = larguraTela / 2 - larguraPersonagem -- 360
 limiteAlturaEstrada = alturaTela / 3
 limiteLarguraEstrada = larguraTela / 2 - larguraObstaculo
 
-velocidadeObstaculo = 50.0
+distanciaObstaculo = 50.0
 
 
 
@@ -29,7 +28,7 @@ type Obstacle = (Float, Float)
 
 -- Posição inicial do jogador
 estadoInicial :: Estado
-estadoInicial = (0, limiteAlturaJogo, [(limiteLarguraEstrada, limiteAlturaEstrada), (limiteLarguraEstrada, -1 * limiteAlturaEstrada)])
+estadoInicial = (0, limiteAlturaJogo, [(limiteLarguraEstrada, limiteAlturaEstrada), (limiteLarguraEstrada - distanciaObstaculo, -1 * limiteAlturaJogo)])
 
 
 -- Renderiza o estado do Jogador
@@ -70,13 +69,13 @@ atualizaEstado :: Float -> Estado -> Estado
 atualizaEstado tempo (x, y, obstaculos) =
     let
         -- Velocidade dos obstáculos
-        velocidade = 50.0
+        velocidade = 80.0
 
         -- Nova posição dos obstáculos
-        novosObstaculos = [( if ox < -limiteLarguraEstrada then
-         limiteLarguraEstrada 
-         else 
-            ox - velocidade * tempo, oy) | (ox, oy) <- obstaculos]
+        novosObstaculos = [(novoOx, novoOy) | (ox, oy) <- obstaculos, 
+            let novoOx = if ox < -limiteLarguraJogo then limiteLarguraJogo else ox - velocidade * tempo, 
+            let novoOy = if ox < -limiteLarguraJogo && y < limiteAlturaEstrada then y - alturaPersonagem else oy]
+
     in
         (x, y, novosObstaculos)
 
