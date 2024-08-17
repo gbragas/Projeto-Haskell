@@ -3,68 +3,80 @@ import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Interface.IO.Game
 
 -- Definindo variáveis globais
-larguraTela :: Float
+larguraTela, alturaTela, larguraPersonagem, alturaPersonagem, limiteAlturaJogo, limiteLarguraJogo, limiteAlturaEstrada :: Float
 larguraTela = 800.0
-
-alturaTela :: Float
 alturaTela = 600.0
-
-larguraPersonagem :: Float
 larguraPersonagem = 50.0
-
-alturaPersonagem :: Float
 alturaPersonagem = 50.0
 
-limiteAlturaJogo :: Float
-limiteAlturaJogo = alturaTela / 2 - alturaPersonagem --260
+larguraObstaculo = 40.0
+alturaObstaculo = 20.0
 
-limiteLarguraJogo :: Float
-limiteLarguraJogo = larguraTela / 2 - larguraPersonagem --360
+limiteAlturaJogo = alturaTela / 2 - alturaPersonagem -- 260
+limiteLarguraJogo = larguraTela / 2 - larguraPersonagem -- 360
+limiteAlturaEstrada = alturaTela / 3
+limiteLarguraEstrada = larguraTela / 2 - larguraObstaculo
 
 
--- Define o estado inicial do jogo (posição do jogador)
-type EstadoJogador = (Float, Float)
+-- Tipo Estado (posição do jogador e lista de obstáculos)
+type Estado = (Float, Float, [Obstacle])  -- (posicaoX, posicaoY, lista de obstáculos)
+
+-- Tipo Obstacle
+type Obstacle = (Float, Float)
 
 -- Posição inicial do jogador
-estadoInicial :: EstadoJogador
-estadoInicial = (0, 0)
+estadoInicial :: Estado
+estadoInicial = (0, limiteAlturaJogo, [(limiteLarguraEstrada, limiteAlturaEstrada), (limiteLarguraEstrada, -1 * limiteAlturaEstrada)])
 
--- Renderiza o estado do jogo
-desenhaEstadoJogador :: EstadoJogador -> Picture
-desenhaEstadoJogador (x, y) = translate x y $ color blue $ rectangleSolid larguraPersonagem alturaPersonagem
+
+-- Renderiza o estado do Jogador
+desenhaJogador :: (Float, Float) -> Picture
+desenhaJogador (x, y) = translate x y $ color blue $ rectangleSolid larguraPersonagem alturaPersonagem
+
+
+-- Função para desenhar os obstáculos
+desenhaObstaculos :: [Obstacle] -> Picture
+desenhaObstaculos obstaculos = Pictures [translate ox oy $ color red $ rectangleSolid larguraObstaculo alturaObstaculo | (ox, oy) <- obstaculos]
+
+
+-- Função principal de desenho
+desenhaEstado :: Estado -> Picture
+desenhaEstado (x, y, obstaculos) = Pictures [desenhaJogador (x, y), desenhaObstaculos obstaculos]
+
+
 
 -- Atualiza o estado com base nas teclas e a área delimitada do jogo
-reageEvento :: Event -> EstadoJogador -> EstadoJogador
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (x, y)
-    | x  > limiteLarguraJogo = (x, y)
-    | otherwise = (x + 10, y)
-reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (x, y)
-    | x < -1 * limiteLarguraJogo = (x, y)
-    | otherwise = (x - 10, y)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (x, y)
-    | y > limiteAlturaJogo = (x, y)
-    | otherwise = (x, y + 10)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (x, y)
-    | y < -1 * limiteAlturaJogo = (x, y)
-    | otherwise = (x, y - 10)
+reageEvento :: Event -> Estado -> Estado
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (x, y, obstaculos)
+    | x > limiteLarguraJogo = (x, y, obstaculos)
+    | otherwise = (x + 10, y, obstaculos)
+reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (x, y, obstaculos)
+    | x < -limiteLarguraJogo = (x, y, obstaculos)
+    | otherwise = (x - 10, y, obstaculos)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (x, y, obstaculos)
+    | y > limiteAlturaJogo = (x, y, obstaculos)
+    | otherwise = (x, y + 10, obstaculos)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (x, y, obstaculos)
+    | y < -limiteAlturaJogo = (x, y, obstaculos)
+    | otherwise = (x, y - 10, obstaculos)
 reageEvento _ estado = estado
 
+
 -- Atualiza o estado do jogo
-atualizaEstadoJogador :: Float -> EstadoJogador -> IO EstadoJogador
-atualizaEstadoJogador _ estado@(x, y) = do
-    putStrLn $ "Current position: x = " ++ show x ++ ", y = " ++ show y
-    return estado
+atualizaEstado :: Float -> Estado -> Estado
+atualizaEstado _ estado@(x, y, obstaculos) = estado
 
 -- Função principal que inicia o jogo
 main :: IO ()
-main = playIO
-    (InWindow "Jogo Haskell" (round larguraTela, round alturaTela) (100, 100)) -- Tamanho da janela
-    white                                         -- Cor do fundo
-    60                                            -- Frames por segundo
+main = play
+    (InWindow "Jogo Haskell" (round larguraTela, round alturaTela) (100, 100))
+    white
+    60
     estadoInicial
-    (return . desenhaEstadoJogador)
-    (\e s -> return $ reageEvento e s)                                 -- EstadoJogador inicial                                -- Função de evento
-    atualizaEstadoJogador                                -- Função de atualização
+    desenhaEstado
+    reageEvento
+    atualizaEstado
+                               -- Função de atualização
 
 {-
   Definicao de tipos de dados
