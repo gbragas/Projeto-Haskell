@@ -1,131 +1,112 @@
 import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
-import Graphics.Gloss.Interface.IO.Game
 
 -- Definindo variáveis globais
-larguraTela :: Float
+larguraTela, alturaTela, larguraPersonagem, alturaPersonagem, limiteAlturaJogo, limiteLarguraJogo, limiteAlturaEstrada, limiteLarguraEstrada, larguraObstaculo, alturaObstaculo, distanciaObstaculo :: Float
 larguraTela = 800.0
-
-alturaTela :: Float
 alturaTela = 600.0
-
-larguraPersonagem :: Float
 larguraPersonagem = 50.0
-
-alturaPersonagem :: Float
 alturaPersonagem = 50.0
 
-limiteAlturaJogo :: Float
-limiteAlturaJogo = alturaTela / 2 - alturaPersonagem --260
+larguraObstaculo = 40.0
+alturaObstaculo = 20.0
 
-limiteLarguraJogo :: Float
-limiteLarguraJogo = larguraTela / 2 - larguraPersonagem --360
+limiteAlturaJogo = alturaTela / 2 - alturaPersonagem / 2 -- 260
+limiteLarguraJogo = larguraTela / 2 - larguraPersonagem -- 360
+limiteAlturaEstrada = alturaTela / 3
+limiteLarguraEstrada = larguraTela / 2 - larguraObstaculo
+
+distanciaObstaculo = 50.0
 
 
--- Define o estado inicial do jogo (posição do jogador)
-type EstadoJogador = (Float, Float)
+-- Tipo Estado (posição do jogador e lista de obstáculos)
+type Estado = (Float, Float, [Obstacle])  -- (posicaoX, posicaoY, lista de obstáculos)
+
+-- Tipo Obstacle
+type Obstacle = (Float, Float)
 
 -- Posição inicial do jogador
-estadoInicial :: EstadoJogador
-estadoInicial = (0, 0)
+estadoInicial :: Estado
+estadoInicial = (0, limiteAlturaJogo, [(limiteLarguraEstrada, limiteAlturaEstrada), (limiteLarguraEstrada - distanciaObstaculo,- (1 * limiteAlturaJogo))])
 
--- Renderiza o estado do jogo
-desenhaEstadoJogador :: EstadoJogador -> Picture
-desenhaEstadoJogador (x, y) = translate x y $ color blue $ rectangleSolid larguraPersonagem alturaPersonagem
+-- Fundo fixo
+desenhaRua :: Picture
+desenhaRua = translate 0 (-50) $ color (light black) $
+    rectangleSolid larguraTela (500 + alturaObstaculo)
+
+-- Renderiza o estado do Jogador
+desenhaJogador :: (Float, Float) -> Picture
+desenhaJogador (x, y) = translate x y $ color blue $ rectangleSolid larguraPersonagem alturaPersonagem
+
+-- Função para desenhar os obstáculos
+desenhaObstaculos :: [Obstacle] -> Picture
+desenhaObstaculos obstaculos = Pictures [translate ox oy $ color red $ rectangleSolid larguraObstaculo alturaObstaculo | (ox, oy) <- obstaculos]
+
+-- Função principal de desenho
+desenhaEstado :: Estado -> Picture
+desenhaEstado (x, y, obstaculos) = Pictures [desenhaRua, desenhaJogador (x, y), desenhaObstaculos obstaculos]
 
 -- Atualiza o estado com base nas teclas e a área delimitada do jogo
-reageEvento :: Event -> EstadoJogador -> EstadoJogador
-reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (x, y)
-    | x  > limiteLarguraJogo = (x, y)
-    | otherwise = (x + 10, y)
-reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (x, y)
-    | x < -1 * limiteLarguraJogo = (x, y)
-    | otherwise = (x - 10, y)
-reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (x, y)
-    | y > limiteAlturaJogo = (x, y)
-    | otherwise = (x, y + 10)
-reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (x, y)
-    | y < -1 * limiteAlturaJogo = (x, y)
-    | otherwise = (x, y - 10)
+reageEvento :: Event -> Estado -> Estado
+reageEvento (EventKey (SpecialKey KeyRight) Down _ _) (x, y, obstaculos)
+    | x > limiteLarguraJogo = (x, y, obstaculos)
+    | otherwise = (x + 10, y, obstaculos)
+reageEvento (EventKey (SpecialKey KeyLeft) Down _ _) (x, y, obstaculos)
+    | x < -limiteLarguraJogo = (x, y, obstaculos)
+    | otherwise = (x - 10, y, obstaculos)
+reageEvento (EventKey (SpecialKey KeyUp) Down _ _) (x, y, obstaculos)
+    | y > limiteAlturaJogo = (x, y, obstaculos)
+    | otherwise = (x, y + 10, obstaculos)
+reageEvento (EventKey (SpecialKey KeyDown) Down _ _) (x, y, obstaculos)
+    | y < -limiteAlturaJogo = (x, y, obstaculos)
+    | otherwise = (x, y - 10, obstaculos)
+reageEvento (EventKey (SpecialKey KeySpace) Down _ _) _ = estadoInicial
 reageEvento _ estado = estado
 
+posicaoJogador :: Estado -> (Float, Float)
+posicaoJogador (x, y, _) = (x, y)
+
+posicaoObstaculos :: Estado -> [Obstacle]
+posicaoObstaculos (_, _, obstaculos) = obstaculos
+
+-- Verifica colisão
+verificaColisao :: Estado -> Bool
+verificaColisao state =
+  let (px, py) = posicaoJogador state
+  in any (\(ox, oy) -> colidio (px, py) (ox, oy)) (posicaoObstaculos state)
+
+colidio :: (Float, Float) -> Obstacle -> Bool
+colidio (jogadorX, jogadorY) (obstaculoX, obstaculoY) =
+  jogadorX - larguraPersonagem / 2 < obstaculoX + larguraObstaculo / 2 &&
+  jogadorX + larguraPersonagem / 2 > obstaculoX - larguraObstaculo / 2 &&
+  jogadorY - alturaPersonagem / 2 < obstaculoY + alturaObstaculo / 2 &&
+  jogadorY + alturaPersonagem / 2 > obstaculoY - alturaObstaculo / 2
+
 -- Atualiza o estado do jogo
-atualizaEstadoJogador :: Float -> EstadoJogador -> IO EstadoJogador
-atualizaEstadoJogador _ estado@(x, y) = do
-    putStrLn $ "Current position: x = " ++ show x ++ ", y = " ++ show y
-    return estado
+atualizaEstado :: Float -> Estado -> Estado
+atualizaEstado _ estado
+    | verificaColisao estado = estadoInicial
+atualizaEstado tempo (x, y, obstaculos) =
+    let
+        -- Velocidade dos obstáculos
+        velocidade = 80.0
+
+        -- Nova posição dos obstáculos
+        novosObstaculos = [(novoOx, novoOy) | (ox, oy) <- obstaculos,
+            let novoOx = if ox < -limiteLarguraJogo then limiteLarguraJogo else ox - velocidade * tempo,
+            let novoOy = if ox < -limiteLarguraJogo && y < limiteAlturaEstrada then y - alturaPersonagem else oy]
+
+    in
+        (x, y, novosObstaculos)
+
 
 -- Função principal que inicia o jogo
 main :: IO ()
-main = playIO
-    (InWindow "Jogo Haskell" (round larguraTela, round alturaTela) (100, 100)) -- Tamanho da janela
-    white                                         -- Cor do fundo
-    60                                            -- Frames por segundo
+main = play
+    (InWindow "Jogo Haskell" (round larguraTela, round alturaTela) (100, 100))
+    white
+    60
     estadoInicial
-    (return . desenhaEstadoJogador)
-    (\e s -> return $ reageEvento e s)                                 -- EstadoJogador inicial                                -- Função de evento
-    atualizaEstadoJogador                                -- Função de atualização
-
-{-
-  Definicao de tipos de dados
--}
-
-
-
-{-
-  Funcoes auxiliares, que nos irao ajudar a criar o jogo
--}
-
-
-
-{-
-  Funcoes que criam o mapa do jogo
--}
-
-
-
-{-
-  Funcoes que criam o boneco do jogo
--}
-
-
-
-{-
-  Funcoes que capturam os eventos do teclado
--}
-
-
-
-{-
-  Funcoes que fazem a movimentacao do boneco
--}
-
-
-
-{-
-  Funcoes que criam os obstaculos do jogo
--}
-
-
-
-{-
-  Funcoes que fazem a movimentacao dos obstaculos
--}
-
-
-
-{-
-  Funcoes que fazem os obstaculos aparecerem/desaparecerem
--}
-
-
-
-{-
-  Funcoes que fazem a colisao do boneco com os obstaculos
--}
-
-
-
-{-
-  Funcoes que criam o estado inicial do jogo
--}
+    desenhaEstado
+    reageEvento
+    atualizaEstado
